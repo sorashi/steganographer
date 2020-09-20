@@ -40,7 +40,9 @@ namespace Steganographer
             FileDialog dialog;
             switch (ChooseType) {
                 case FileChooseType.Open:
-                    dialog = new OpenFileDialog();
+                    dialog = new OpenFileDialog() {
+                        Filter = "Obrázky|*.png;*.jpg;*.jpeg;*.bmp"
+                    };
                     break;
                 case FileChooseType.Save:
                     dialog = new SaveFileDialog {
