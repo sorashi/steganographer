@@ -29,6 +29,7 @@ namespace Steganographer
                 pixel++;
                 lengthBuffer[1] = ByteHider.RecoverByte(*pixel);
                 var dataLength = BitConverter.ToUInt16(lengthBuffer, 0);
+                if(dataLength > w.Width * w.Height - 2 - _checksumCalculator.ChecksumSize) ShowImageInvalidMessage();
                 var dataBuffer = new byte[dataLength];
                 for (int i = 0; i < dataLength; i++) {
                     pixel++;
@@ -43,9 +44,13 @@ namespace Steganographer
 
                 // check the checksum
                 var checksumMatches = Enumerable.SequenceEqual(checksumBuffer, _checksumCalculator.GetChecksum(dataBuffer));
-                if (!checksumMatches) MessageBox.Show("The image does not contain a valid message");
+                if (!checksumMatches) ShowImageInvalidMessage();
                 else OutputTextBox.Text = Encoding.UTF8.GetString(dataBuffer);
             }
+        }
+
+        private void ShowImageInvalidMessage() {
+            MessageBox.Show("The image does not contain a valid message");
         }
     }
 }

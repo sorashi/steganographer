@@ -20,7 +20,7 @@ namespace Steganographer
 
         private void SaveButton_Click(object sender, RoutedEventArgs e) {
             if (IsOverCapacity) {
-                MessageBox.Show("Zpráva je moc dlouhá.");
+                MessageBox.Show("The message is too long");
                 return;
             }
             using (var fileStream = new FileStream(OutputFileChoose.Filename, FileMode.Create)) {
