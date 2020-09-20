@@ -63,6 +63,7 @@
     <Compile Include="FileChooseUserControl.xaml.cs">
       <DependentUpon>FileChooseUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="IsNotNullToBooleanConverter.cs" />
     <Compile Include="MessageRecoverView.xaml.cs">
       <DependentUpon>MessageRecoverView.xaml</DependentUpon>
     </Compile>

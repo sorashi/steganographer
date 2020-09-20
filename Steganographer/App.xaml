@@ -9,5 +9,6 @@
             <Setter Property="Background" Value="White"></Setter>
         </Style>
         <local:ToWritableBitmapConverter x:Key="ToWritableBitmapConverter"></local:ToWritableBitmapConverter>
+        <local:IsNotNullToBooleanConverter x:Key="IsNotNullToBooleanConverter"></local:IsNotNullToBooleanConverter>
     </Application.Resources>
 </Application>

@@ -23,7 +23,7 @@
         <TextBox Grid.ColumnSpan="2"
                  TextWrapping="Wrap"
                  HorizontalScrollBarVisibility="Disabled"
-                 VerticalScrollBarVisibility="Auto" Text="Hello" MinHeight="80" TextChanged="MessageTextChanged"></TextBox>
+                 VerticalScrollBarVisibility="Auto" Text="Message" MinHeight="80" TextChanged="MessageTextChanged"></TextBox>
         <StackPanel Grid.Row="1" Grid.Column="0">
             <Label Content="Vstupní soubor:"></Label>
             <local:FileChooseView ChooseType="Open" x:Name="InputFileChoose"></local:FileChooseView>
@@ -36,6 +36,6 @@
         </Image>
         <Image RenderOptions.BitmapScalingMode="NearestNeighbor" Grid.Row="2" Grid.Column="1" Source="{Binding ElementName=InputImage,Path=Source,Mode=OneWay,Converter={StaticResource ToWritableBitmapConverter}}" x:Name="OutputImage">
         </Image>
-        <Button Grid.Row="3" Grid.Column="1" Content="Uložit" Width="150" Click="SaveButton_Click"></Button>
+        <Button Grid.Row="3" Grid.Column="1" Content="Uložit" Width="150" Click="SaveButton_Click" IsEnabled="{Binding ElementName=OutputImage, Path=Source, Mode=OneWay, Converter={StaticResource IsNotNullToBooleanConverter}}"></Button>
     </Grid>
 </UserControl>
