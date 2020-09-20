@@ -1,10 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace Steganographer
 {
     public class XorChecksumCalculator : ChecksumCalculator
     {
         public override byte[] GetChecksum(byte[] data, int startIndex = 0, int length = -1) {
+            if(data == null) throw new NullReferenceException(nameof(data));
             if (length == -1) length = data.Length; // take until the end
             return new[] {
                 data.Skip(startIndex)
