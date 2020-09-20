@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="Steganographer.MessageHiderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Steganographer"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"> 
+    <UserControl.DataContext>
+        <local:MessageHiderViewModel />
+    </UserControl.DataContext>
+    <Grid d:DesignStyle="{StaticResource DesignerStyle}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <TextBox Grid.ColumnSpan="2"
+                 TextWrapping="Wrap"
+                 HorizontalScrollBarVisibility="Disabled"
+                 VerticalScrollBarVisibility="Auto" Text="Hello" MinHeight="80" TextChanged="MessageTextChanged"></TextBox>
+        <StackPanel Grid.Row="1" Grid.Column="0">
+            <Label Content="Vstupní soubor:"></Label>
+            <local:FileChooseView ChooseType="Open" x:Name="InputFileChoose"></local:FileChooseView>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="1">
+            <Label Content="Výstupní soubor:"></Label>
+            <local:FileChooseView ChooseType="Save" x:Name="OutputFileChoose"></local:FileChooseView>
+        </StackPanel>
+        <Image RenderOptions.BitmapScalingMode="NearestNeighbor" Grid.Row="2" Grid.Column="0" Source="{Binding ElementName=InputFileChoose,Path=Filename}" x:Name="InputImage">
+        </Image>
+        <Image RenderOptions.BitmapScalingMode="NearestNeighbor" Grid.Row="2" Grid.Column="1" Source="{Binding ElementName=InputImage,Path=Source,Mode=OneWay,Converter={StaticResource ToWritableBitmapConverter}}" x:Name="OutputImage">
+        </Image>
+        <Button Grid.Row="3" Grid.Column="1" Content="Uložit" Width="150" Click="SaveButton_Click"></Button>
+    </Grid>
+</UserControl>
