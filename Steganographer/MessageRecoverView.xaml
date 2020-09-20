@@ -19,7 +19,7 @@
                  IsReadOnly="True"
                  TextWrapping="Wrap"
                  HorizontalScrollBarVisibility="Disabled"
-                 VerticalScrollBarVisibility="Auto" Text="" MinHeight="80" x:Name="OutputTextBox"></TextBox>
+                 VerticalScrollBarVisibility="Auto" Text="" MinHeight="80" MaxHeight="120" x:Name="OutputTextBox"></TextBox>
         <StackPanel Grid.Row="1" Grid.Column="0">
             <Label Content="Vstupní soubor:"></Label>
             <local:FileChooseView ChooseType="Open" x:Name="InputFileChoose" FilenameChanged="InputFileChoose_OnFilenameChanged"></local:FileChooseView>
