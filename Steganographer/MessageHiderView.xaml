@@ -17,25 +17,28 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition></RowDefinition>
             <RowDefinition Height="Auto"></RowDefinition>
         </Grid.RowDefinitions>
         <TextBox Grid.ColumnSpan="2"
                  TextWrapping="Wrap"
                  HorizontalScrollBarVisibility="Disabled"
-                 VerticalScrollBarVisibility="Auto" Text="Message" MinHeight="80" TextChanged="MessageTextChanged"></TextBox>
-        <StackPanel Grid.Row="1" Grid.Column="0">
+                 VerticalScrollBarVisibility="Auto" Text="Message" MinHeight="80" TextChanged="MessageTextChanged" x:Name="InputTextBox"></TextBox>
+        <!-- Value="{Binding ElementName=InputTextBox,Path=Text.Length, Mode=OneWay}" -->
+        <ProgressBar x:Name="ProgressBar" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0" Height="10px"></ProgressBar>
+        <StackPanel Grid.Row="2" Grid.Column="0">
             <Label Content="Vstupní soubor:"></Label>
             <local:FileChooseView ChooseType="Open" x:Name="InputFileChoose"></local:FileChooseView>
         </StackPanel>
-        <StackPanel Grid.Row="1" Grid.Column="1">
+        <StackPanel Grid.Row="2" Grid.Column="1">
             <Label Content="Výstupní soubor:"></Label>
             <local:FileChooseView ChooseType="Save" x:Name="OutputFileChoose"></local:FileChooseView>
         </StackPanel>
-        <Image RenderOptions.BitmapScalingMode="NearestNeighbor" Grid.Row="2" Grid.Column="0" Source="{Binding ElementName=InputFileChoose,Path=Filename}" x:Name="InputImage">
+        <Image RenderOptions.BitmapScalingMode="NearestNeighbor" Grid.Row="3" Grid.Column="0" Source="{Binding ElementName=InputFileChoose,Path=Filename}" x:Name="InputImage">
         </Image>
-        <Image RenderOptions.BitmapScalingMode="NearestNeighbor" Grid.Row="2" Grid.Column="1" Source="{Binding ElementName=InputImage,Path=Source,Mode=OneWay,Converter={StaticResource ToWritableBitmapConverter}}" x:Name="OutputImage">
+        <Image RenderOptions.BitmapScalingMode="NearestNeighbor" Grid.Row="3" Grid.Column="1" Source="{Binding ElementName=InputImage,Path=Source,Mode=OneWay,Converter={StaticResource ToWritableBitmapConverter}}" x:Name="OutputImage">
         </Image>
-        <Button Grid.Row="3" Grid.Column="1" Content="Uložit" Width="150" Click="SaveButton_Click" IsEnabled="{Binding ElementName=OutputImage, Path=Source, Mode=OneWay, Converter={StaticResource IsNotNullToBooleanConverter}}"></Button>
+        <Button Grid.Row="4" Grid.Column="1" Content="Uložit" Width="150" Click="SaveButton_Click" IsEnabled="{Binding ElementName=OutputImage, Path=Source, Mode=OneWay, Converter={StaticResource IsNotNullToBooleanConverter}}"></Button>
     </Grid>
 </UserControl>
