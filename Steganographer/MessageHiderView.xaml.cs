@@ -13,6 +13,8 @@ namespace Steganographer
     /// </summary>
     public partial class MessageHiderView : UserControl
     {
+        private readonly ChecksumCalculator _checksumCalculator = new XorChecksumCalculator();
+
         public MessageHiderView() {
             InitializeComponent();
         }
@@ -29,11 +31,19 @@ namespace Steganographer
             if (OutputImage?.Source == null) return;
             var w = (WriteableBitmap)OutputImage.Source;
             var textBox = sender as TextBox;
-            var data = new byte[Encoding.UTF8.GetByteCount(textBox.Text) + 2];
-            Encoding.UTF8.GetBytes(textBox.Text, 0, textBox.Text.Length, data, 2);
-            var lengthBytes = BitConverter.GetBytes((ushort) (data.Length - 2));
+            var textDataLength = Encoding.UTF8.GetByteCount(textBox.Text);
+            // [ushort text length] [text data] [checksum]
+            var data = new byte[2 + textDataLength + _checksumCalculator.ChecksumSize];
+
+            var lengthBytes = BitConverter.GetBytes((ushort) textDataLength);
             if(lengthBytes.Length != 2) throw new Exception();
             Array.Copy(lengthBytes, data, 2);
+
+            Encoding.UTF8.GetBytes(textBox.Text, 0, textBox.Text.Length, data, 2);
+
+            var checksumData = _checksumCalculator.GetChecksum(data, 2, textDataLength);
+            Array.Copy(checksumData, 0, data, 2 + textDataLength, checksumData.Length);
+
             var original = new WriteableBitmap((BitmapSource) InputImage.Source);
             w.Lock();
             long counter = 0;

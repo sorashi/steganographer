@@ -57,7 +57,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="XorChecksumCalculator.cs" />
     <Compile Include="ByteHider.cs" />
+    <Compile Include="ChecksumCalculator.cs" />
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="FileChooseType.cs" />
     <Compile Include="FileChooseUserControl.xaml.cs">

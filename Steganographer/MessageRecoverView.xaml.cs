@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,6 +14,7 @@ namespace Steganographer
     /// </summary>
     public partial class MessageRecoverView : UserControl
     {
+        private ChecksumCalculator _checksumCalculator = new XorChecksumCalculator();
         public MessageRecoverView() {
             InitializeComponent();
         }
@@ -20,7 +22,6 @@ namespace Steganographer
         private void InputFileChoose_OnFilenameChanged(object sender, EventArgs e) {
             if (InputImage?.Source == null) return;
             var w = new WriteableBitmap((BitmapSource)InputImage.Source);
-            long counter = 0;
             unsafe {
                 uint* pixel = (uint*)w.BackBuffer;
                 byte[] lengthBuffer = new byte[2];
@@ -34,7 +35,16 @@ namespace Steganographer
                     dataBuffer[i] = ByteHider.RecoverByte(*pixel);
                 }
 
-                OutputTextBox.Text = Encoding.UTF8.GetString(dataBuffer);
+                var checksumBuffer = new byte[_checksumCalculator.ChecksumSize];
+                for (int i = 0; i < checksumBuffer.Length; i++) {
+                    pixel++;
+                    checksumBuffer[i] = ByteHider.RecoverByte(*pixel);
+                }
+
+                // check the checksum
+                var checksumMatches = Enumerable.SequenceEqual(checksumBuffer, _checksumCalculator.GetChecksum(dataBuffer));
+                if (!checksumMatches) MessageBox.Show("The image does not contain a valid message");
+                else OutputTextBox.Text = Encoding.UTF8.GetString(dataBuffer);
             }
         }
     }
