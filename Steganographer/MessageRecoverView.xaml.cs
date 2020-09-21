@@ -22,14 +22,42 @@ namespace Steganographer
         private void InputFileChoose_OnFilenameChanged(object sender, EventArgs e) {
             if (InputImage?.Source == null) return;
             var w = new WriteableBitmap((BitmapSource)InputImage.Source);
+            var counter = 0;
             unsafe {
                 uint* pixel = (uint*)w.BackBuffer;
+                FillStart fill;
+                try {
+                    fill = (FillStart)ByteHider.RecoverByte(*pixel);
+                }
+                catch (Exception exception) {
+                    ShowImageInvalidMessage();
+                    return;
+                }
+                pixel++;
+                
                 byte[] lengthBuffer = new byte[2];
                 lengthBuffer[0] = ByteHider.RecoverByte(*pixel);
                 pixel++;
                 lengthBuffer[1] = ByteHider.RecoverByte(*pixel);
                 var dataLength = BitConverter.ToUInt16(lengthBuffer, 0);
                 if(dataLength > w.Width * w.Height - 2 - _checksumCalculator.ChecksumSize) ShowImageInvalidMessage();
+                int startIndex;
+                switch (fill) {
+                    case FillStart.FromBeginning:
+                        startIndex = 3;
+                        break;
+                    case FillStart.FromCenter:
+                        startIndex = (w.PixelWidth * w.PixelHeight - dataLength) / 2;
+                        break;
+                    case FillStart.FromEnd:
+                        startIndex = w.PixelWidth * w.PixelHeight - dataLength;
+                        break;
+                    default:
+                        ShowImageInvalidMessage();
+                        return;
+                }
+
+                pixel += startIndex - 4;
                 var dataBuffer = new byte[dataLength];
                 for (int i = 0; i < dataLength; i++) {
                     pixel++;

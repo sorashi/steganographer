@@ -39,6 +39,14 @@
         </Image>
         <Image RenderOptions.BitmapScalingMode="NearestNeighbor" Grid.Row="3" Grid.Column="1" Source="{Binding ElementName=InputImage,Path=Source,Mode=OneWay,Converter={StaticResource ToWritableBitmapConverter}}" x:Name="OutputImage">
         </Image>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.Column="0">
+            <Label>Způsob vyplňování:</Label>
+            <ComboBox x:Name="FillComboBox"  Width="150" SelectedIndex="0">
+                <ComboBoxItem>Shora</ComboBoxItem>
+                <ComboBoxItem>Zespodu</ComboBoxItem>
+                <ComboBoxItem>Odprostřed</ComboBoxItem>
+            </ComboBox>
+        </StackPanel>
         <Button Grid.Row="4" Grid.Column="1" Content="Uložit" Width="150" Click="SaveButton_Click" IsEnabled="{Binding ElementName=OutputImage, Path=Source, Mode=OneWay, Converter={StaticResource IsNotNullToBooleanConverter}}"></Button>
     </Grid>
 </UserControl>
