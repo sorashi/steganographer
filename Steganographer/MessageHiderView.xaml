@@ -24,7 +24,7 @@
         <TextBox Grid.ColumnSpan="2"
                  TextWrapping="Wrap"
                  HorizontalScrollBarVisibility="Disabled"
-                 VerticalScrollBarVisibility="Auto" Text="Message" MinHeight="80" MaxHeight="120" TextChanged="MessageTextChanged" x:Name="InputTextBox"></TextBox>
+                 VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Text="Message" MinHeight="80" MaxHeight="120" TextChanged="MessageTextChanged" x:Name="InputTextBox"></TextBox>
         <!-- Value="{Binding ElementName=InputTextBox,Path=Text.Length, Mode=OneWay}" -->
         <ProgressBar x:Name="ProgressBar" Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0" Height="10px"></ProgressBar>
         <StackPanel Grid.Row="2" Grid.Column="0">
