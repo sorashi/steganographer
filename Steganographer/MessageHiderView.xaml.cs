@@ -65,9 +65,17 @@ namespace Steganographer
                 ChecksumType = new XorChecksumCalculator(),
                 DataLength = checked((ushort) data.Length)
             };
+            try {
+                header.DataSpacing = byte.Parse(SpaceTextBox.Text);
+                if(header.DataSpacing > 254) throw new Exception();
+            }
+            catch {
+                MessageBox.Show("Invalid spacing, allowed range is 0-254");
+                return;
+            }
 
             var capacity = Math.Min(ushort.MaxValue,
-                w.PixelWidth * w.PixelHeight - header.Length); // todo dodelate space
+                (w.PixelWidth * w.PixelHeight - header.Length) / (header.DataSpacing + 1));
             ProgressBar.Maximum = capacity;
             var textDataLength = Encoding.UTF8.GetByteCount(textBox.Text);
             ProgressBar.Value = textDataLength;
@@ -78,7 +86,7 @@ namespace Steganographer
 
             header.SetChecksumFromData(data);
             int dataStartPixelIndex =
-                FillStartUtility.GetFillStartIndex(header.Fill, w.PixelWidth, w.PixelHeight, data.Length);
+                FillStartUtility.GetFillStartIndex(header.Fill, w.PixelWidth, w.PixelHeight, data.Length * (header.DataSpacing + 1));
             var original = new WriteableBitmap((BitmapSource) InputImage.Source);
             w.Lock();
             long counter = 0;
@@ -106,6 +114,13 @@ namespace Steganographer
                     pixel++;
                     originalPixel++;
                     counter++;
+                    // copy spacing pixels
+                    for (int i = 0; i < header.DataSpacing; i++) {
+                        *pixel = *originalPixel;
+                        pixel++;
+                        originalPixel++;
+                        counter++;
+                    }
                 }
                 // copy unmodified bytes
                 while (counter < w.PixelWidth * w.PixelHeight) {

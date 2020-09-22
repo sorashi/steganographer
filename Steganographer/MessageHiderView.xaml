@@ -46,6 +46,8 @@
                 <ComboBoxItem>Zespodu</ComboBoxItem>
                 <ComboBoxItem>Odprostřed</ComboBoxItem>
             </ComboBox>
+            <Label>Mezera:</Label>
+            <TextBox Name="SpaceTextBox" Width="30">0</TextBox>
         </StackPanel>
         <Button Grid.Row="4" Grid.Column="1" Content="Uložit" Width="150" Click="SaveButton_Click" IsEnabled="{Binding ElementName=OutputImage, Path=Source, Mode=OneWay, Converter={StaticResource IsNotNullToBooleanConverter}}"></Button>
     </Grid>

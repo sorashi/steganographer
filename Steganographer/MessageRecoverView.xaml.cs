@@ -38,13 +38,15 @@ namespace Steganographer
                     return;
                 }
                 pixel++;
-                int startIndex = FillStartUtility.GetFillStartIndex(header.Fill, w.PixelWidth, w.PixelHeight, header.DataLength);
+                int startIndex = FillStartUtility.GetFillStartIndex(header.Fill, w.PixelWidth, w.PixelHeight, header.DataLength * (header.DataSpacing + 1));
 
                 pixel += startIndex - header.Length - 1;
                 var dataBuffer = new byte[header.DataLength];
                 for (int i = 0; i < dataBuffer.Length; i++) {
                     dataBuffer[i] = ByteHider.RecoverByte(*pixel);
                     pixel++;
+                    // skip spacing pixels
+                    for (int j = 0; j < header.DataSpacing; j++) pixel++;
                 }
 
                 // check the checksum
