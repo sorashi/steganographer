@@ -22,56 +22,33 @@ namespace Steganographer
         private void InputFileChoose_OnFilenameChanged(object sender, EventArgs e) {
             if (InputImage?.Source == null) return;
             var w = new WriteableBitmap((BitmapSource)InputImage.Source);
-            var counter = 0;
             unsafe {
                 uint* pixel = (uint*)w.BackBuffer;
-                FillStart fill;
-                try {
-                    fill = (FillStart)ByteHider.RecoverByte(*pixel);
+                MessageHeader header = new MessageHeader {ChecksumType = new XorChecksumCalculator()};
+                var headerData = new byte[header.Length];
+                for (int i = 0; i < headerData.Length; i++) {
+                    headerData[i] = ByteHider.RecoverByte(*pixel);
+                    pixel++;
                 }
-                catch (Exception exception) {
+                try {
+                    header = MessageHeader.FromBytes(headerData);
+                }
+                catch (FormatException) {
                     ShowImageInvalidMessage();
                     return;
                 }
                 pixel++;
-                
-                byte[] lengthBuffer = new byte[2];
-                lengthBuffer[0] = ByteHider.RecoverByte(*pixel);
-                pixel++;
-                lengthBuffer[1] = ByteHider.RecoverByte(*pixel);
-                var dataLength = BitConverter.ToUInt16(lengthBuffer, 0);
-                if(dataLength > w.Width * w.Height - 2 - _checksumCalculator.ChecksumSize) ShowImageInvalidMessage();
-                int startIndex;
-                switch (fill) {
-                    case FillStart.FromBeginning:
-                        startIndex = 3;
-                        break;
-                    case FillStart.FromCenter:
-                        startIndex = (w.PixelWidth * w.PixelHeight - dataLength) / 2;
-                        break;
-                    case FillStart.FromEnd:
-                        startIndex = w.PixelWidth * w.PixelHeight - dataLength;
-                        break;
-                    default:
-                        ShowImageInvalidMessage();
-                        return;
-                }
+                int startIndex = FillStartUtility.GetFillStartIndex(header.Fill, w.PixelWidth, w.PixelHeight, header.DataLength);
 
-                pixel += startIndex - 4;
-                var dataBuffer = new byte[dataLength];
-                for (int i = 0; i < dataLength; i++) {
-                    pixel++;
+                pixel += startIndex - header.Length - 1;
+                var dataBuffer = new byte[header.DataLength];
+                for (int i = 0; i < dataBuffer.Length; i++) {
                     dataBuffer[i] = ByteHider.RecoverByte(*pixel);
-                }
-
-                var checksumBuffer = new byte[_checksumCalculator.ChecksumSize];
-                for (int i = 0; i < checksumBuffer.Length; i++) {
                     pixel++;
-                    checksumBuffer[i] = ByteHider.RecoverByte(*pixel);
                 }
 
                 // check the checksum
-                var checksumMatches = Enumerable.SequenceEqual(checksumBuffer, _checksumCalculator.GetChecksum(dataBuffer));
+                var checksumMatches = header.Checksum.SequenceEqual(_checksumCalculator.GetChecksum(dataBuffer));
                 if (!checksumMatches) ShowImageInvalidMessage();
                 else OutputTextBox.Text = Encoding.UTF8.GetString(dataBuffer);
             }

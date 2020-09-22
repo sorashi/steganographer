@@ -11,6 +11,22 @@ namespace Steganographer
     {
         FromBeginning = 0, FromEnd = 1, FromCenter = 2
     }
+
+    public static class FillStartUtility
+    {
+        public static int GetFillStartIndex(FillStart fill, int width, int height, int dataLength) {
+            switch (fill) {
+                case FillStart.FromBeginning:
+                    return new MessageHeader {ChecksumType = new XorChecksumCalculator()}.Length;
+                case FillStart.FromCenter:
+                    return (width * height - dataLength) / 2;
+                case FillStart.FromEnd:
+                    return width * height - dataLength;
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+    }
     /// <summary>
     /// Interaction logic for MessageHiderView.xaml
     /// </summary>
@@ -39,10 +55,20 @@ namespace Steganographer
         private void MessageTextChanged(object sender, TextChangedEventArgs e) {
             if (OutputImage?.Source == null) return;
             var w = (WriteableBitmap)OutputImage.Source;
-            var capacity = Math.Min(ushort.MaxValue,
-                w.PixelWidth * w.PixelHeight - 2 - _checksumCalculator.ChecksumSize - 1); // 2 is ushort and 1 is fill byte
-            ProgressBar.Maximum = capacity;
+
             var textBox = sender as TextBox;
+
+            IsOverCapacity = false;
+            var data = Encoding.UTF8.GetBytes(textBox.Text);
+            var header = new MessageHeader {
+                Fill = (FillStart) FillComboBox.SelectedIndex,
+                ChecksumType = new XorChecksumCalculator(),
+                DataLength = checked((ushort) data.Length)
+            };
+
+            var capacity = Math.Min(ushort.MaxValue,
+                w.PixelWidth * w.PixelHeight - header.Length); // todo dodelate space
+            ProgressBar.Maximum = capacity;
             var textDataLength = Encoding.UTF8.GetByteCount(textBox.Text);
             ProgressBar.Value = textDataLength;
             if (textDataLength > capacity) {
@@ -50,56 +76,43 @@ namespace Steganographer
                 return;
             }
 
-            IsOverCapacity = false;
-            // [fill start] [ushort text length] [text data] [checksum]
-            var data = new byte[textDataLength + _checksumCalculator.ChecksumSize];
-
-            var fill = (FillStart) FillComboBox.SelectedIndex;
-
-            var lengthBytes = BitConverter.GetBytes((ushort) textDataLength);
-            if(lengthBytes.Length != 2) throw new Exception();
-
-            Encoding.UTF8.GetBytes(textBox.Text, 0, textBox.Text.Length, data, 0);
-
-            var checksumData = _checksumCalculator.GetChecksum(data, 0, textDataLength);
-            Array.Copy(checksumData, 0, data, textDataLength, checksumData.Length);
-            int dataStartPixelIndex;
-            switch (fill) {
-                case FillStart.FromBeginning:
-                    dataStartPixelIndex = 3;
-                    break;
-                case FillStart.FromCenter:
-                    dataStartPixelIndex = (w.PixelWidth * w.PixelHeight - data.Length) / 2;
-                    break;
-                case FillStart.FromEnd:
-                    dataStartPixelIndex = w.PixelWidth * w.PixelHeight - data.Length;
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
+            header.SetChecksumFromData(data);
+            int dataStartPixelIndex =
+                FillStartUtility.GetFillStartIndex(header.Fill, w.PixelWidth, w.PixelHeight, data.Length);
             var original = new WriteableBitmap((BitmapSource) InputImage.Source);
             w.Lock();
             long counter = 0;
-            int dataIndex = 0;
             unsafe {
                 uint* originalPixel = (uint*) original.BackBuffer;
                 uint* pixel = (uint*)w.BackBuffer;
-                for (int y = 0; y < w.PixelHeight; y++) {
-                    for (int x = 0; x < w.PixelWidth; x++) {
-                        if (counter == 0)
-                            *pixel = ByteHider.HideByte(*originalPixel, (byte) fill);
-                        else if (counter <= 2)
-                            *pixel = ByteHider.HideByte(*originalPixel, lengthBytes[counter - 1]);
-                        else if (counter >= dataStartPixelIndex && counter < dataStartPixelIndex + data.Length) {
-                            *pixel = ByteHider.HideByte(*originalPixel, data[dataIndex]);
-                            dataIndex++;
-                        }
-                        else
-                            *pixel = *originalPixel;
-                        ++pixel;
-                        ++originalPixel;
-                        ++counter;
-                    }
+                var headerBytes = header.GetBytes();
+                // place header bytes
+                foreach (byte b in headerBytes) {
+                    *pixel = ByteHider.HideByte(*originalPixel, b);
+                    pixel++;
+                    originalPixel++;
+                    counter++;
+                }
+                // copy unmodified bytes
+                while (counter < dataStartPixelIndex) {
+                    *pixel = *originalPixel;
+                    pixel++;
+                    originalPixel++;
+                    counter++;
+                }
+                // place data
+                foreach (byte b in data) {
+                    *pixel = ByteHider.HideByte(*originalPixel, b);
+                    pixel++;
+                    originalPixel++;
+                    counter++;
+                }
+                // copy unmodified bytes
+                while (counter < w.PixelWidth * w.PixelHeight) {
+                    *pixel = *originalPixel;
+                    pixel++;
+                    originalPixel++;
+                    counter++;
                 }
             }
 

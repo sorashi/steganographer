@@ -57,6 +57,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="MessageHeader.cs" />
     <Compile Include="XorChecksumCalculator.cs" />
     <Compile Include="ByteHider.cs" />
     <Compile Include="ChecksumCalculator.cs" />

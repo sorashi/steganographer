@@ -1,0 +1,43 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Steganographer
+{
+    public class MessageHeader
+    {
+        public FillStart Fill { get; set; }
+        public ushort DataLength { get; set; }
+        public byte[] Checksum { get; set; }
+        /// <summary>
+        /// Type of checksum used
+        /// </summary>
+        public ChecksumCalculator ChecksumType { get; set; }
+        /// <summary>
+        /// Length of the header in bytes
+        /// </summary>
+        public int Length => 3 + (ChecksumType?.ChecksumSize ?? Checksum?.Length ?? throw new NullReferenceException());
+        public byte[] GetBytes() {
+            return new[] {(byte) Fill}.Concat(BitConverter.GetBytes(DataLength)).Concat(Checksum).ToArray();
+        }
+        /// <summary>
+        /// Checksum from data and saves it into the header
+        /// </summary>
+        /// <param name="data"></param>
+        public void SetChecksumFromData(byte[] data) {
+            Checksum = ChecksumType.GetChecksum(data);
+        }
+
+        public static MessageHeader FromBytes(byte[] data) {
+            var fill = (FillStart) data[0];
+            if(!Enum.IsDefined(typeof(FillStart), fill)) throw new FormatException();
+            return new MessageHeader {
+                Fill = fill,
+                DataLength = BitConverter.ToUInt16(data, 1),
+                Checksum = data.Skip(3).ToArray()
+            };
+        }
+    }
+}
