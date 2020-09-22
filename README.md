@@ -10,10 +10,19 @@ ovládací prvky pro schování zprávy do obrázku.
 
 Horní textové pole je určeno pro zadání schovávané zprávy. Pod ním se nachází
 progress bar indikující, jak moc je zprávou vyčerpána nosičová kapacita obrázku.
+Nosičová kapacita obrázku záleží na zvolených parametrech a velikosti obrázku.
 
 V levé části jsou prvky týkající se vstupního obrázku a vpravo výstupního.
 Stisknutím tlačítka procházet uživatel vybere vstupní respektive výstupní
 soubor.
+
+Vlevo dole se nachází výběrové menu způsobu vyplňování pixelů. Na výběr je ze
+tří možností: shora, zespodu a odprostřed. Na zvoleném místě bude v obrázku
+schována zpráva.
+
+Vpravo od způsobu vyplňování se nachází možnost "mezera". Ta odpovídá tomu jak
+daleko od sebe budou pixely, v nichž se schovají bajty zprávy. Tuto mezeru lze
+nastavit na hodnotu 0-254.
 
 Při změně textu v horním textovém poli dojde k zakódování zprávy do výstupního
 obrázku. Po stisknutí tlačítka uložit se výstupní obrázek uloží do nastaveného
@@ -42,11 +51,11 @@ Po otevření obrázku uživatelem je obrázek zkopírován a převeden na form�
 třídou `ToWritableBitmapConverter` (pokud tento formát ještě nesplňuje).
 
 Schování obrázku se odehrává v handleru události změny textu v textovém poli
-`MessageTextChanged`. Ve formátu Bgra32 má každý
-pixel 32 bitů, tedy 4 bajty. Do každého takového pixelu je schován jeden bajt
-zprávy pomocí statické třídy `ByteHider` a to následujícím způsobem: bajt je
-rozdělen na 4 skupiny po dvou bitech. Každá tato skupina je pak zapsána na
-řádově nejnižší pozice každého jednotlivého bajtu v pixelu.
+`MessageTextChanged`. Ve formátu Bgra32 má každý pixel 32 bitů, tedy 4 bajty. Do
+každého takového pixelu lze schovat jeden bajt zprávy pomocí statické třídy
+`ByteHider` a to následujícím způsobem: bajt je rozdělen na 4 skupiny po dvou
+bitech. Každá tato skupina je pak zapsána na řádově nejnižší pozice každého
+jednotlivého bajtu v pixelu.
 
 Například pokud se ve zprávě nachází bajt s hodnotou 27, neboli
 **00**\_**01**\_**10**\_**11** a je právě zapisováno na pixel s hodnotou
@@ -55,11 +64,12 @@ hodnotu 101010**00**\_101010**01**\_101010**10**\_101010**11**. Tímto je
 zaručeno, že každý z kanálu R,G,B,A je pixelu změněn maximálně o hodnotu 3
 (například z 255 na 252). To je pro lidské oko téměř neviditelné.
 
-Do schovávaných dat jsou kromě textové zprávy schovány ještě dvě informace -
-před zprávu je zapsána její délka (ushort, tedy dva bajty) a za zprávu její
-kontrolní součet (v aktuální verzi programu jeden bajt). Kontrolní součet je
-použit pro zkontrolování, zda se v obrázku nachází zpráva, příp. jestli není
-poškozena (jinak kontrolní součet nesedí).
+Do schovávaných dat jsou kromě textové zprávy schovány ještě další informace -
+způsob vyplňování (`FillStart` -- jeden bajt), délka zprávy (ushort, tedy dva
+bajty), mezera (`DataSpacing` -- jeden bajt) a kontrolní součet (v aktuální
+verzi programu jeden bajt). Kontrolní součet je použit pro zkontrolování, zda se
+v obrázku nachází zpráva, příp. jestli není poškozena (jinak kontrolní součet
+nesedí).
 
 Kontrolní součet je zobecněn abstraktní třídou `ChecksumCalculator`. V aktuální
 verzi programu je použita implementace `XorChecksumCalculator`, která kontrolní
